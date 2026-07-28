@@ -1,0 +1,2 @@
+| tstats count where index=dhs_cribl sourcetype="pan:traffic" by host
+| eval tag="m2131_9.4"
