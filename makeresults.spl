@@ -1,0 +1,53 @@
+| makeresults
+| eval m2131_code="17.2"
+| eval category="Operating Systems - Windows Infrastructure (Host Network Communications)" 
+| eval data="Active Network Communication with Other Hosts"
+| eval criticality="0"
+| append [ | makeresults
+| eval m2131_code="18.1"
+| eval category="Operating Systems - Windows Infrastructure" 
+| eval data="Powershell Execution Commands"
+| eval criticality="0" ]
+| append [ | makeresults
+| eval m2131_code="18.2"
+| eval category="Operating Systems - Windows Infrastructure" 
+| eval data="WMI Events"
+| eval criticality="0" ]
+| append [ | makeresults
+| eval m2131_code="18.3"
+| eval category="Operating Systems - Windows Infrastructure" 
+| eval data="Registry Access"
+| eval criticality="0" ]
+| append [ | makeresults
+| eval m2131_code="18.4"
+| eval category="Operating Systems - Windows Infrastructure" 
+| eval data="Command-Line Interface"
+| eval criticality="0" ]
+| append [ | makeresults
+| eval m2131_code="18.5"
+| eval category="Operating Systems - Windows Infrastructure" 
+| eval data="BIOS/UEFI/Firmware Information"
+| eval criticality="0" ]
+| append [ | makeresults
+| eval m2131_code="19.1"
+| eval category="Operating Systems - MACOS (User and Administrator Access)" 
+| eval data="File and Object Access"
+| eval criticality="0" ]
+| append [ | makeresults
+| eval m2131_code="19.2"
+| eval category="Operating Systems - MACOS (User and Administrator Access)" 
+| eval data="Audit Log Access"
+| eval criticality="0" ]
+| append [ | makeresults
+| eval m2131_code="19.3"
+| eval category="Operating Systems - MACOS (User and Administrator Access)" 
+| eval data="System Access and Log Off"
+| eval criticality="0" ]
+| append [ | makeresults
+| eval m2131_code="19.4"
+| eval category="Operating Systems - MACOS (User and Administrator Access)" 
+| eval data="Privilege Access and Log Off"
+| eval criticality="0" ]
+| table m2131_code category data criticality
+| inputlookup append=t m2131_ref.csv
+| outputlookup m2131_ref.csv
