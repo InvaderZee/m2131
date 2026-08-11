@@ -14,7 +14,34 @@ index=azure sourcetype="o365:management:activity" source="*Audit_AzureActiveDire
 | rename properties.action as action
 | eval m2131_code=case(action="Create", "2.1", 1=1, "2.5")
 | table m2131_code, count ]
-| stats sum(count) as count by m2131_code
+| append [| tstats count where index=cyberark sourcetype="cyberark:epv:cef"
+| eval m2131_code=mvappend("2.7","2.8","2.9")
+| mvexpand m2131_code]
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
+
+
+index=azure sourcetype=azure:aad:audit category=UserManagement targetResources{}.displayName=zz*
+| stats count 
+| eval m2131_code="2.6"
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
+
+index=azure sourcetype IN (mscs:insights:riskyusers, mscs:insights:userriskevents) identity=zz*
+| stats count 
+| eval m2131_code="2.10"
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
+
 
 
 | tstats count where index=dhs_cribl sourcetype="pan:traffic" by host
