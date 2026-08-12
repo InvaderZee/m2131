@@ -1,0 +1,28 @@
+``` Network Infrastructure```
+| tstats count where index=dns sourcetype=infoblox:dhcp
+| eval m2131_code="4.1"
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
+
+
+| tstats count where index=cisco sourcetype="cisco:wlc"
+| eval m2131_code="7.1"
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
+
+
+
+index=cisco sourcetype="cisco:ise:syslog" Protocol=Radius
+| stats count 
+| eval m2131_code="7.4"
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
