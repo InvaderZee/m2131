@@ -9,6 +9,11 @@ index=wineventlog_security source=XmlWinEventLog:Security EventCode IN (4656,465
     EventCode IN (6416,6419,6420,6421,6422), "13.7"
 )
 | stats count by m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 
@@ -24,3 +29,8 @@ OR
 )
 | stats count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
