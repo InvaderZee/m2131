@@ -9,3 +9,18 @@ index=wineventlog_security source=XmlWinEventLog:Security EventCode IN (4656,465
     EventCode IN (6416,6419,6420,6421,6422), "13.7"
 )
 | stats count by m2131_code
+
+
+
+
+(index=wineventlog_system EventCode IN (6005,6006,6008,6013,41,1074,7036,7034,7031,7000,7001))
+OR
+(index=wineventlog_security EventCode IN (4688,4689))
+| eval m2131_code=case(
+    EventCode IN (6005,6006,6008,6013,41,1074), "14.2",
+    EventCode=7036, "14.3",
+    EventCode IN (7034,7031,7000,7001), "14.4",
+    EventCode IN (4688,4689), "14.5"
+)
+| stats count by m2131_code
+| sort m2131_code
