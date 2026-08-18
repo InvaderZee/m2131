@@ -1,0 +1,89 @@
+(index=linux_auth sourcetype=linux_secure app IN ("sshd","sudo","su","login"))
+OR (index=linux_ausearch (sourcetype=auditd OR sourcetype=ausearch OR sourcetype="linux:audit:ocsf:sys:fs"))
+OR (index=linux_session sourcetype IN ("lastlog","who"))
+OR (index=os sourcetype=nfsiostat)
+OR (index=main sourcetype="filezilla:log")
+| eval m2131_code=case(
+    sourcetype="linux:audit:ocsf:sys:fs", "25.1",
+    sourcetype IN ("auditd","ausearch") AND (like(_raw,"%CONFIG_CHANGE%") OR like(_raw,"%audit%log%")), "25.2",
+    app="login" OR sourcetype IN ("lastlog","who"), "25.3",
+    app IN ("sudo","su"), "25.4",
+    app="sshd", "25.5",
+    sourcetype IN ("nfsiostat","filezilla:log"), "25.6"
+)
+| stats count by m2131_code
+| sort m2131_code
+
+
+
+(index=os sourcetype IN ("cpu","vmstat","df","nfsiostat","iostat"))
+OR (index=os sourcetype=syslog)
+OR (index=linux_service sourcetype="Q_Unix:Service")
+OR (index=os sourcetype=ps)
+OR (index=linux_ausearch sourcetype="linux:audit:ocsf:sys:proc")
+| eval m2131_code=case(
+    sourcetype IN ("cpu","vmstat","df","nfsiostat","iostat"), "26.1",
+    sourcetype="syslog", "26.2",
+    sourcetype="Q_Unix:Service" AND NOT (like(_raw,"%failed%") OR like(_raw,"%restart%")), "26.3",
+    sourcetype="Q_Unix:Service" AND (like(_raw,"%failed%") OR like(_raw,"%restart%")), "26.4",
+    sourcetype IN ("ps","linux:audit:ocsf:sys:proc"), "26.5"
+)
+| stats count by m2131_code
+| sort m2131_code
+
+
+(index=os sourcetype IN ("Linux:SELinuxConfig","Unix:SSHDConfig","Unix:UserAccounts"))
+OR (index=linux_ausearch (sourcetype=auditd OR sourcetype=ausearch OR sourcetype="linux:audit:ocsf:iam"))
+OR (index=linux_auth sourcetype=linux_secure app IN ("useradd","userdel","usermod","passwd","groupadd","groupdel","groupmod"))
+OR (index=linux_cron sourcetype IN ("linux:cron","linux_cron"))
+| eval m2131_code=case(
+    sourcetype IN ("Linux:SELinuxConfig","Unix:SSHDConfig"), "27.1",
+    sourcetype IN ("auditd","ausearch") AND (like(_raw,"%CONFIG_CHANGE%") OR like(_raw,"%cleared%") OR like(_raw,"%rotate%")), "27.2",
+    sourcetype="Unix:UserAccounts" OR app IN ("useradd","userdel","usermod","passwd"), "27.3",
+    sourcetype="linux:audit:ocsf:iam" OR app IN ("groupadd","groupdel","groupmod"), "27.4",
+    sourcetype IN ("linux:cron","linux_cron"), "27.5"
+)
+| stats count by m2131_code
+| sort m2131_code
+
+
+
+index=main sourcetype="filezilla:log"
+| eval m2131_code="28.1"
+| stats count by m2131_code
+
+
+
+(index=os sourcetype=openPorts)
+OR (index=linux_netmon sourcetype=netstat)
+| eval m2131_code=case(
+    sourcetype="openPorts", "29.1",
+    sourcetype="netstat" AND like(_raw,"%LISTEN%"), "29.1",
+    sourcetype="netstat" AND like(_raw,"%ESTABLISHED%"), "29.2"
+)
+| stats count by m2131_code
+| sort m2131_code
+
+
+
+(index=os sourcetype IN ("bash_history","Linux:SELinuxConfig","syslog","errors-2","maillog-too_small","podman:container:log","package","hardware") OR sourcetype=dnf.* OR sourcetype=rhsm-*)
+OR (index=linux_auth sourcetype=linux_secure)
+OR (index=linux_ausearch (sourcetype=auditd OR sourcetype=ausearch))
+OR (index=linux_packages sourcetype=dnf)
+OR (index=linux_update sourcetype=linux_dnf)
+OR (index=jboss sourcetype="jboss:server:log")
+OR (index=main sourcetype IN ("tomcat:access:log","tomcat:catalina","tomcat:log","tomcat:runtime:log"))
+| eval m2131_code=case(
+    sourcetype="bash_history", "30.1",
+    sourcetype="Linux:SELinuxConfig", "30.2",
+    sourcetype IN ("syslog","errors-2","maillog-too_small"), "30.3",
+    sourcetype="linux_secure" OR sourcetype IN ("auditd","ausearch"), "30.4",
+    sourcetype IN ("podman:container:log","jboss:server:log","tomcat:access:log","tomcat:catalina","tomcat:log","tomcat:runtime:log"), "30.5",
+    sourcetype IN ("dnf","linux_dnf","package") OR like(sourcetype,"dnf.%") OR like(sourcetype,"rhsm-%"), "30.6",
+    sourcetype="hardware", "30.7"
+)
+| stats count by m2131_code
+| sort m2131_code
+
+
+
