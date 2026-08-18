@@ -19,6 +19,11 @@ OR (index=venafi sourcetype=venafi)
 )
 | stats count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 (index=aws sourcetype IN ("aws:cloudtrail","aws:cloudwatch","aws:elb:accesslogs","aws:guardduty"))
@@ -36,9 +41,14 @@ OR (index=azure sourcetype IN ("azure:aad:signin","mscs:insights:microsoftgrapha
 )
 | stats count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
-index=aws sourcetype IN ("aws:cloudtrail","aws:cloudwatch","aws:config","aws:config:rule","aws:s3:accesslogs","aws:guardduty")
+| tstats count where index=aws sourcetype IN ("aws:cloudtrail","aws:cloudwatch","aws:config","aws:config:rule","aws:s3:accesslogs","aws:guardduty") by sourcetype
 | eval m2131_code=case(
     sourcetype="aws:cloudtrail", "33.1",
     sourcetype="aws:cloudwatch", "33.2",
@@ -46,20 +56,30 @@ index=aws sourcetype IN ("aws:cloudtrail","aws:cloudwatch","aws:config","aws:con
     sourcetype="aws:s3:accesslogs", "33.4",
     sourcetype="aws:guardduty", "33.8"
 )
-| stats count by m2131_code
+| stats max(count) as count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
-index=azure sourcetype IN ("azure:aad:audit","azure:aad:signin","azure:aad:user","azure:aad:device","mscs:azure:audit","azure:resourcegraph","o365:management:activity")
+| tstats count where index=azure sourcetype IN ("azure:aad:audit","azure:aad:signin","azure:aad:user","azure:aad:device","mscs:azure:audit","azure:resourcegraph","o365:management:activity") by sourcetype
 | eval m2131_code=case(
     sourcetype IN ("azure:aad:audit","azure:aad:signin","azure:aad:user","azure:aad:device"), "34.1",
     sourcetype IN ("mscs:azure:audit","azure:resourcegraph"), "34.2",
     sourcetype="o365:management:activity", "34.3"
 )
-| stats count by m2131_code
+| stats max(count) as count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 
-index=gcp sourcetype="google:gcp:resource:metadata"
+index=gcp sourcetype="google:gcp:resource:metadata" 
 | stats count
