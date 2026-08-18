@@ -2,29 +2,44 @@
 sourcetype IN ("cisco:ios","juniper:syslog","tanium:detect:signals","aws:cloudtrail","azure:aad:audit","mscs:insights:microsoftgraphactivitylogs","cisco:ise:syslog","OktaIM2:log","azure:aad:signin","zscalernss-web","aws:elb:accesslogs","nginx:plus:access","cisco:dnac:networkhealth","cisco:dnac:clienthealth","cisco:dnac:devicehealth","illumio:pce:health","aws:cloudwatchlogs:vpcflow","zscalerlss-zpa-auth","zscalerlss-zpa-connector","syslog","infoblox:dns","zscalernss-dns")
 BY sourcetype
 | eval m2131_code=case(
-    sourcetype="tanium:detect:signals", "1",
-    sourcetype IN ("aws:cloudtrail","azure:aad:audit","mscs:insights:microsoftgraphactivitylogs"), "2",
-    sourcetype IN ("cisco:ise:syslog","OktaIM2:log","azure:aad:signin"), "3",
-    sourcetype IN ("zscalernss-web","aws:elb:accesslogs","nginx:plus:access"), "5",
-    sourcetype IN ("cisco:dnac:networkhealth","cisco:dnac:clienthealth","cisco:dnac:devicehealth","illumio:pce:health"), "6",
-    sourcetype="aws:cloudwatchlogs:vpcflow", "7",
-    sourcetype IN ("zscalerlss-zpa-auth","zscalerlss-zpa-connector"), "8",
-    sourcetype IN ("syslog","cisco:ios"), "9",
-    sourcetype IN ("infoblox:dns","zscalernss-dns"), "11"
+    sourcetype="tanium:detect:signals", "8.1",
+    sourcetype IN ("aws:cloudtrail","azure:aad:audit","mscs:insights:microsoftgraphactivitylogs"), "8.2",
+    sourcetype IN ("cisco:ise:syslog","OktaIM2:log","azure:aad:signin"), "8.3",
+    sourcetype IN ("zscalernss-web","aws:elb:accesslogs","nginx:plus:access"), "8.5",
+    sourcetype IN ("cisco:dnac:networkhealth","cisco:dnac:clienthealth","cisco:dnac:devicehealth","illumio:pce:health"), "8.6",
+    sourcetype="aws:cloudwatchlogs:vpcflow", "8.7",
+    sourcetype IN ("zscalerlss-zpa-auth","zscalerlss-zpa-connector"), "8.8",
+    sourcetype IN ("syslog","cisco:ios"), "8.9",
+    sourcetype IN ("infoblox:dns","zscalernss-dns"), "8.11"
 )
 | stats sum(count) as count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 | tstats count WHERE (index=cisco OR index=juniper) sourcetype IN ("cisco:ios","juniper:syslog") BY sourcetype
 | eval m2131_code="9.2"
 | stats sum(count) as count by m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 
 | tstats count WHERE (index=aws OR index=main) sourcetype IN ("aws:elb:accesslogs","nginx:plus:access") BY sourcetype
 | eval m2131_code="10.1"
 | stats sum(count) as count by m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 
@@ -35,6 +50,11 @@ BY sourcetype
     sourcetype="zscalerapi-zia-audit", "11.2"
 )
 | stats sum(count) as count by m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 
@@ -47,3 +67,8 @@ BY sourcetype
 )
 | stats sum(count) as count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
