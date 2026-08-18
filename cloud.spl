@@ -1,0 +1,65 @@
+(index=azure sourcetype IN ("azure:aad:audit","azure:aad:signin","mscs:azure:audit","azure:resourcegraph","mscs:insights:managedidentitysigninlogs","mscs:resource:virtualNetwork"))
+OR (index=aws sourcetype IN ("aws:cloudtrail","aws:config","aws:config:rule","aws:s3:accesslogs"))
+OR (index=cyberark sourcetype="cyberark:epv:cef")
+OR (index=venafi sourcetype=venafi)
+| eval m2131_code=case(
+    sourcetype IN ("azure:aad:signin","cyberark:epv:cef") AND like(_raw,"%break%glass%"), "31.1",
+    sourcetype="azure:aad:audit" AND like(_raw,"%conditional%access%"), "31.2",
+    sourcetype IN ("aws:config:rule","mscs:azure:audit") AND like(_raw,"%polic%"), "31.3",
+    sourcetype IN ("azure:aad:audit","aws:cloudtrail") AND like(_raw,"%role%"), "31.4",
+    sourcetype="mscs:resource:virtualNetwork", "31.5",
+    sourcetype="aws:cloudtrail" AND like(_raw,"%DeleteLock%"), "31.6",
+    sourcetype IN ("aws:cloudtrail","mscs:azure:audit") AND like(_raw,"%logging%"), "31.7",
+    sourcetype IN ("mscs:insights:managedidentitysigninlogs","cyberark:epv:cef"), "31.8",
+    sourcetype="aws:cloudtrail" AND like(_raw,"%AlarmRule%"), "31.9",
+    sourcetype="venafi" OR (sourcetype="aws:cloudtrail" AND like(_raw,"%KMS%")), "31.10",
+    sourcetype="aws:s3:accesslogs", "31.11",
+    sourcetype="aws:config" AND like(_raw,"%app%"), "31.12",
+    sourcetype="aws:config" AND like(_raw,"%data%"), "31.13"
+)
+| stats count by m2131_code
+| sort m2131_code
+
+
+(index=aws sourcetype IN ("aws:cloudtrail","aws:cloudwatch","aws:elb:accesslogs","aws:guardduty"))
+OR (index=vpcflow sourcetype="aws:cloudwatchlogs:vpcflow")
+OR (index=azure sourcetype IN ("azure:aad:signin","mscs:insights:microsoftgraphactivitylogs","o365:graph:api","mscs:resource:securityGroup","mscs:resource:disk"))
+| eval m2131_code=case(
+    sourcetype="aws:guardduty", "32.1",
+    sourcetype IN ("aws:cloudtrail","mscs:insights:microsoftgraphactivitylogs","o365:graph:api"), "32.2",
+    sourcetype="azure:aad:signin", "32.3",
+    sourcetype="mscs:resource:securityGroup", "32.4",
+    sourcetype="aws:elb:accesslogs", "32.5",
+    sourcetype IN ("aws:cloudwatch","mscs:resource:disk"), "32.6",
+    sourcetype="aws:cloudwatchlogs:vpcflow", "32.8",
+    sourcetype="aws:cloudwatch" AND like(_raw,"%/var/log%"), "32.10"
+)
+| stats count by m2131_code
+| sort m2131_code
+
+
+index=aws sourcetype IN ("aws:cloudtrail","aws:cloudwatch","aws:config","aws:config:rule","aws:s3:accesslogs","aws:guardduty")
+| eval m2131_code=case(
+    sourcetype="aws:cloudtrail", "33.1",
+    sourcetype="aws:cloudwatch", "33.2",
+    sourcetype IN ("aws:config","aws:config:rule"), "33.3",
+    sourcetype="aws:s3:accesslogs", "33.4",
+    sourcetype="aws:guardduty", "33.8"
+)
+| stats count by m2131_code
+| sort m2131_code
+
+
+index=azure sourcetype IN ("azure:aad:audit","azure:aad:signin","azure:aad:user","azure:aad:device","mscs:azure:audit","azure:resourcegraph","o365:management:activity")
+| eval m2131_code=case(
+    sourcetype IN ("azure:aad:audit","azure:aad:signin","azure:aad:user","azure:aad:device"), "34.1",
+    sourcetype IN ("mscs:azure:audit","azure:resourcegraph"), "34.2",
+    sourcetype="o365:management:activity", "34.3"
+)
+| stats count by m2131_code
+| sort m2131_code
+
+
+
+index=gcp sourcetype="google:gcp:resource:metadata"
+| stats count
