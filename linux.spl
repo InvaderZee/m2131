@@ -13,6 +13,11 @@ OR (index=main sourcetype="filezilla:log")
 )
 | stats count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 
@@ -30,6 +35,11 @@ OR (index=linux_ausearch sourcetype="linux:audit:ocsf:sys:proc")
 )
 | stats count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 (index=os sourcetype IN ("Linux:SELinuxConfig","Unix:SSHDConfig","Unix:UserAccounts"))
@@ -45,12 +55,22 @@ OR (index=linux_cron sourcetype IN ("linux:cron","linux_cron"))
 )
 | stats count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 
 index=main sourcetype="filezilla:log"
 | eval m2131_code="28.1"
 | stats count by m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 
@@ -63,6 +83,11 @@ OR (index=linux_netmon sourcetype=netstat)
 )
 | stats count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 
@@ -84,6 +109,11 @@ OR (index=main sourcetype IN ("tomcat:access:log","tomcat:catalina","tomcat:log"
 )
 | stats count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 
