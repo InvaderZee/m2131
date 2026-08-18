@@ -1,0 +1,49 @@
+| tstats count WHERE (index=cisco OR index=juniper OR index=zscaler OR index=aws OR index=vpcflow OR index=main OR index=dns OR index=azure OR index=tanium)
+sourcetype IN ("cisco:ios","juniper:syslog","tanium:detect:signals","aws:cloudtrail","azure:aad:audit","mscs:insights:microsoftgraphactivitylogs","cisco:ise:syslog","OktaIM2:log","azure:aad:signin","zscalernss-web","aws:elb:accesslogs","nginx:plus:access","cisco:dnac:networkhealth","cisco:dnac:clienthealth","cisco:dnac:devicehealth","illumio:pce:health","aws:cloudwatchlogs:vpcflow","zscalerlss-zpa-auth","zscalerlss-zpa-connector","syslog","infoblox:dns","zscalernss-dns")
+BY sourcetype
+| eval m2131_code=case(
+    sourcetype="tanium:detect:signals", "1",
+    sourcetype IN ("aws:cloudtrail","azure:aad:audit","mscs:insights:microsoftgraphactivitylogs"), "2",
+    sourcetype IN ("cisco:ise:syslog","OktaIM2:log","azure:aad:signin"), "3",
+    sourcetype IN ("zscalernss-web","aws:elb:accesslogs","nginx:plus:access"), "5",
+    sourcetype IN ("cisco:dnac:networkhealth","cisco:dnac:clienthealth","cisco:dnac:devicehealth","illumio:pce:health"), "6",
+    sourcetype="aws:cloudwatchlogs:vpcflow", "7",
+    sourcetype IN ("zscalerlss-zpa-auth","zscalerlss-zpa-connector"), "8",
+    sourcetype IN ("syslog","cisco:ios"), "9",
+    sourcetype IN ("infoblox:dns","zscalernss-dns"), "11"
+)
+| stats sum(count) as count by m2131_code
+| sort m2131_code
+
+
+| tstats count WHERE (index=cisco OR index=juniper) sourcetype IN ("cisco:ios","juniper:syslog") BY sourcetype
+| eval m2131_code="9.2"
+| stats sum(count) as count by m2131_code
+
+
+
+| tstats count WHERE (index=aws OR index=main) sourcetype IN ("aws:elb:accesslogs","nginx:plus:access") BY sourcetype
+| eval m2131_code="10.1"
+| stats sum(count) as count by m2131_code
+
+
+
+
+| tstats count WHERE index=zscaler sourcetype IN ("zscalernss-web","zscalerapi-zia-audit") BY sourcetype
+| eval m2131_code=case(
+    sourcetype="zscalernss-web", "11.1",
+    sourcetype="zscalerapi-zia-audit", "11.2"
+)
+| stats sum(count) as count by m2131_code
+
+
+
+| tstats count WHERE (index=cisco OR index=main OR index=servicenow) sourcetype IN ("cisco:ise:syslog","syslog","cisco:ios","snow:sys_user_list","snow:sys_audit") BY sourcetype
+| eval m2131_code=case(
+    sourcetype="cisco:ise:syslog", "12.1",
+    sourcetype IN ("syslog","cisco:ios"), "12.2",
+    sourcetype="snow:sys_user_list", "12.4",
+    sourcetype="snow:sys_audit", "12.5"
+)
+| stats sum(count) as count by m2131_code
+| sort m2131_code
