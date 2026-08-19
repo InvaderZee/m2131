@@ -1,0 +1,47 @@
+| tstats count WHERE (index=main OR index=windows) 
+sourcetype IN ("apache:access","apache:access:combined","apache:access:kv","apache:error","iis:custom","iishttperr","iisw3c","ms:iis:auto","nginx:plus:access","tomcat:access:log","tomcat:catalina","tomcat:log","tomcat:runtime:log","undertow","wildfly","access_combined","ecw:tomcat","ideal:ecs:weblogs","odls:access:log") BY sourcetype
+| eval m2131_code=case(
+    sourcetype IN ("apache:access","apache:access:combined","apache:access:kv","nginx:plus:access","access_combined","odls:access:log","ecw:tomcat","ideal:ecs:weblogs","iisw3c","ms:iis:auto"), "46.1",
+    sourcetype IN ("apache:error","iishttperr"), "46.2",
+    sourcetype IN ("tomcat:catalina","tomcat:log","undertow","wildfly"), "46.6",
+    sourcetype="iis:custom", "46.4"
+)
+| stats sum(count) as count by m2131_code
+| sort m2131_code
+
+
+| tstats count WHERE (index=main OR index=azure) sourcetype IN ("vmware:vclog","mscs:resource:virtualMachine") BY sourcetype
+| eval m2131_code=case(
+    sourcetype="vmware:vclog", "47.1",
+    sourcetype="mscs:resource:virtualMachine", "47.3"
+)
+| stats sum(count) as count by m2131_code
+| sort m2131_code
+
+
+
+| tstats count WHERE (index=aws OR index=nessus) sourcetype IN ("eks:edae:data-bodega:dev","eks:edae:data-bodega:prd","tenable:io:vuln") BY sourcetype
+| eval m2131_code=case(
+    sourcetype IN ("eks:edae:data-bodega:dev","eks:edae:data-bodega:prd"), "50.4",
+    sourcetype="tenable:io:vuln", "50.3"
+)
+| stats sum(count) as count by m2131_code
+| sort m2131_code
+
+
+
+| tstats count WHERE (index=os OR index=azure OR index=main) 
+sourcetype IN ("cpu","vmstat","mscs:resource:disk","appd:controller:server") BY sourcetype
+| eval m2131_code=case(
+    sourcetype IN ("cpu","vmstat","mscs:resource:disk"), "51.1",
+    sourcetype="appd:controller:server", "51.2"
+)
+| stats sum(count) as count by m2131_code
+| sort m2131_code
+
+
+
+| tstats count WHERE (index=main OR index=azure OR index=msexchange) 
+sourcetype IN ("cofense","cofense:syslog","mscs:insights:emailevents","mscs:insights:emailattachmentinfo","mscs:insights:emailpostdeliveryevents","MSExchange:2013:SmtpReceive") BY sourcetype
+| eval m2131_code="52.1"
+| stats sum(count) as count by m2131_code

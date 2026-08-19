@@ -1,0 +1,16 @@
+| tstats count WHERE index=ice_finance sourcetype="log4j"
+| eval m2131_code="62.2"
+| stats sum(count) as count by m2131_code
+
+
+
+
+| tstats count WHERE (index=aws OR index=os) sourcetype IN ("eks:edae:data-bodega:dev","eks:edae:data-bodega:prd","podman:container:log") BY sourcetype
+| eval m2131_code=case(
+    sourcetype IN ("eks:edae:data-bodega:dev","eks:edae:data-bodega:prd","podman:container:log"), "63.1"
+)
+| stats sum(count) as count by m2131_code
+
+
+
+

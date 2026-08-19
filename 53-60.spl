@@ -1,0 +1,40 @@
+| tstats count WHERE (index=servicenow OR index=main) 
+sourcetype IN ("snow:sys_user_session","snow:syslog","ffms:oidm:access","appd:controller:server","snow:sys_properties") BY sourcetype
+| eval m2131_code=case(
+    sourcetype IN ("snow:sys_user_session","ffms:oidm:access"), "55.1",
+    sourcetype="snow:syslog", "55.2",
+    sourcetype="appd:controller:server", "55.4",
+    sourcetype="snow:sys_properties", "55.5"
+)
+| stats sum(count) as count by m2131_code
+| sort m2131_code
+
+
+
+| tstats count WHERE (index=main OR index=ice_finance OR index=ice_database) 
+sourcetype IN ("ffms:oidm:access","bmis:authlog","LEADTRAC_JBOSS","hdw:jboss:eap82:server","LEADTRAC_MONGO_JSON","hdw:primex:query","hdw:primex:opsutils","odls:access:log","esp:access:log") BY sourcetype
+| eval m2131_code=case(
+    sourcetype IN ("ffms:oidm:access","bmis:authlog"), "56.1",
+    sourcetype IN ("LEADTRAC_JBOSS","hdw:jboss:eap82:server"), "56.2",
+    sourcetype IN ("LEADTRAC_MONGO_JSON","hdw:primex:query"), "56.3",
+    sourcetype="hdw:primex:opsutils", "56.6",
+    sourcetype IN ("odls:access:log","esp:access:log"), "56.7"
+)
+| stats sum(count) as count by m2131_code
+| sort m2131_code
+
+
+
+| tstats count WHERE index=os sourcetype="podman:container:log"
+| eval m2131_code="58.1"
+| stats sum(count) as count by m2131_code
+
+
+
+| tstats count WHERE (index=os OR index=linux_packages OR index=linux_update) 
+sourcetype IN ("dnf","linux_dnf","rhsm-2","rhsm-3","amazon-ssm-agent") BY sourcetype
+| eval m2131_code="60.1"
+| stats sum(count) as count by m2131_code
+
+
+
