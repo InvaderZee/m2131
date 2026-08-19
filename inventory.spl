@@ -1,0 +1,24 @@
+index=axonius sourcetype="axonius:devices"
+| fields adapters_data.active_directory_adapter.ad_object_type adapters_data.active_directory_adapter.device_city adapters_data.active_directory_adapter.device_country adapters_data.crowd_strike_adapter.chassis_type_desc adapters_data.service_now_adapter.asset_tag adapters_data.service_now_adapter.device_managed_by_email adapters_data.service_now_adapter.snow_business adapters_data.tanium_asset_adapter.chassis_type internal_axon_id specific_data.data.axonius_risk_level{} specific_data.data.axonius_risk_score{} specific_data.data.device_serial{} specific_data.data.domain{} specific_data.data.enrichment_u_fisma_id{} specific_data.data.enrichment_u_active{} specific_data.data.enrichment_u_dhs_hva{} specific_data.data.enrichment_u_fisma_reportable{} specific_data.data.enrichment_u_iscm_waiver{} specific_data.data.enrichment_u_security_support_portfolio{} specific_data.data.enrichment_u_system_owner{} specific_data.data.enrichment_u_system_security_officer_isso{} specific_data.data.hostname{} specific_data.data.last_seen.$date specific_data.data.network_interfaces.ips_v4{} specific_data.data.network_interfaces.mac{} specific_data.data.os.distribution_preferred specific_data.data.public_ips{}
+| rename adapters_data.active_directory_adapter.ad_object_type as ad_object_type,  adapters_data.active_directory_adapter.device_city as city, adapters_data.active_directory_adapter.device_country as country, adapters_data.crowd_strike_adapter.chassis_type_desc as chassis_type_desc, adapters_data.service_now_adapter.asset_tag as asset_tag, adapters_data.service_now_adapter.device_managed_by_email as managed_by_email, adapters_data.service_now_adapter.snow_business as business, adapters_data.tanium_asset_adapter.chassis_type as chassis_type, internal_axon_id as  axon_id, specific_data.data.axonius_risk_level{} as risk_level, specific_data.data.axonius_risk_score{} as risk_score, specific_data.data.device_serial{} as serial, specific_data.data.domain{} as domain, specific_data.data.enrichment_u_fisma_id{} as fisma_id, specific_data.data.enrichment_u_active{} as active, specific_data.data.enrichment_u_dhs_hva{} as dhs_hva, specific_data.data.enrichment_u_fisma_reportable{} as fisma_reportable, specific_data.data.enrichment_u_iscm_waiver{} as iscm_waiver, specific_data.data.enrichment_u_security_support_portfolio{} as security_support_portfolio, specific_data.data.enrichment_u_system_owner{} as system_owner, specific_data.data.enrichment_u_system_security_officer_isso{} as isso, specific_data.data.hostname{} as hostname, specific_data.data.last_seen.$date as last_seen, specific_data.data.network_interfaces.ips_v4{} as ip, specific_data.data.network_interfaces.mac{} as mac, specific_data.data.public_ips{} as public_ip, specific_data.data.os.distribution_preferred as distribution
+| stats latest(*) as * by hostname
+| outputlookup axonius.csv
+
+
+
+| metadata type=hosts index=*wineventlog*
+| append [ | metadata type=hosts index=linux* ]
+| append [ | metadata type=hosts index=os ]
+| append [ | metadata type=hosts index=powershell ]
+| append [ | metadata type=hosts index=sysmon ]
+| stats sum(totalCount) as count by host
+| outputlookup 21_31_hosts.csv
+
+
+
+index=tanium
+| stats count by Computer_Name
+| rex field=Computer_Name "^(?<host>[^.]+)"
+| where count>1
+| inputlookup append=t 21_31_hosts.csv
+| stats sum(count) as count by host
