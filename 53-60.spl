@@ -8,6 +8,11 @@ sourcetype IN ("snow:sys_user_session","snow:syslog","ffms:oidm:access","appd:co
 )
 | stats sum(count) as count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 
@@ -22,12 +27,22 @@ sourcetype IN ("ffms:oidm:access","bmis:authlog","LEADTRAC_JBOSS","hdw:jboss:eap
 )
 | stats sum(count) as count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 
 | tstats count WHERE index=os sourcetype="podman:container:log"
 | eval m2131_code="58.1"
 | stats sum(count) as count by m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 
@@ -35,6 +50,11 @@ sourcetype IN ("ffms:oidm:access","bmis:authlog","LEADTRAC_JBOSS","hdw:jboss:eap
 sourcetype IN ("dnf","linux_dnf","rhsm-2","rhsm-3","amazon-ssm-agent") BY sourcetype
 | eval m2131_code="60.1"
 | stats sum(count) as count by m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 

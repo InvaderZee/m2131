@@ -8,6 +8,11 @@ sourcetype IN ("apache:access","apache:access:combined","apache:access:kv","apac
 )
 | stats sum(count) as count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 | tstats count WHERE (index=main OR index=azure) sourcetype IN ("vmware:vclog","mscs:resource:virtualMachine") BY sourcetype
@@ -17,6 +22,11 @@ sourcetype IN ("apache:access","apache:access:combined","apache:access:kv","apac
 )
 | stats sum(count) as count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 
@@ -27,6 +37,11 @@ sourcetype IN ("apache:access","apache:access:combined","apache:access:kv","apac
 )
 | stats sum(count) as count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 
@@ -38,6 +53,11 @@ sourcetype IN ("cpu","vmstat","mscs:resource:disk","appd:controller:server") BY 
 )
 | stats sum(count) as count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 
@@ -45,3 +65,8 @@ sourcetype IN ("cpu","vmstat","mscs:resource:disk","appd:controller:server") BY 
 sourcetype IN ("cofense","cofense:syslog","mscs:insights:emailevents","mscs:insights:emailattachmentinfo","mscs:insights:emailpostdeliveryevents","MSExchange:2013:SmtpReceive") BY sourcetype
 | eval m2131_code="52.1"
 | stats sum(count) as count by m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
