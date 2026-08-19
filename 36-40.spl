@@ -1,0 +1,58 @@
+| tstats count WHERE (index=os OR index=servicenow OR index=tanium OR index=azure) 
+sourcetype IN ("config_file","snow:change_request","snow:sys_properties","tanium","ms365:defender:incident","snow:task_ci","azure:aad:signin") BY sourcetype
+| eval m2131_code=case(
+    sourcetype IN ("config_file","snow:change_request","snow:sys_properties"), "36.1",
+    sourcetype IN ("tanium","ms365:defender:incident"), "36.2",
+    sourcetype="snow:task_ci", "36.3",
+    sourcetype="azure:aad:signin", "36.4"
+)
+| stats sum(count) as count by m2131_code
+| sort m2131_code
+
+
+| tstats count WHERE (index=okta OR index=azure OR index=cisco OR index=linux_auth OR index=servicenow OR index=os) 
+sourcetype IN ("OktaIM2:log","azure:aad:signin","cisco:ise:syslog","linux_secure","azure:aad:audit","GraphSecurityAlert","ms365:defender:incident","snow:sys_user","Unix:UserAccounts") BY sourcetype
+| eval m2131_code=case(
+    sourcetype IN ("OktaIM2:log","azure:aad:signin","cisco:ise:syslog","linux_secure"), "37.1",
+    sourcetype IN ("GraphSecurityAlert","ms365:defender:incident"), "37.4",
+    sourcetype IN ("azure:aad:audit","snow:sys_user","Unix:UserAccounts"), "37.5"
+)
+| stats sum(count) as count by m2131_code
+| sort m2131_code
+
+
+
+| tstats count WHERE index=cyberark sourcetype="cyberark:epv:cef"
+| eval m2131_code="37.3"
+
+
+
+| tstats count WHERE (index=linux_auth OR index=linux_ausearch OR index=os OR index=powershell) 
+sourcetype IN ("linux_secure","auditd","ausearch","bash_history","XmlWinEventLog:Windows PowerShell") BY sourcetype
+| eval m2131_code=case(
+    sourcetype IN ("linux_secure","auditd","ausearch"), "38.1",
+    sourcetype="bash_history", "38.3",
+    sourcetype="XmlWinEventLog:Windows PowerShell", "38.4"
+)
+| stats sum(count) as count by m2131_code
+| sort m2131_code
+
+
+index=powershell sourcetype="XmlWinEventLog:Windows PowerShell" EventCode IN (4103,4104)
+| eval m2131_code=case(EventCode=4103,"38.4", EventCode=4104,"38.5")
+| stats count by m2131_code
+
+
+| tstats count WHERE (index=azure OR index=main) sourcetype IN ("o365:management:activity","cofense:syslog") BY sourcetype
+| eval m2131_code="39.1"
+| stats sum(count) as count by m2131_code
+
+
+| tstats count WHERE (index=tanium OR index=azure OR index=zscaler) 
+sourcetype IN ("tanium","ms365:defender:incident","zscalernss-web") BY sourcetype
+| eval m2131_code=case(
+    sourcetype IN ("tanium","ms365:defender:incident"), "40.1",
+    sourcetype="zscalernss-web", "40.3"
+)
+| stats sum(count) as count by m2131_code
+| sort m2131_code
