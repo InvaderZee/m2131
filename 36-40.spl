@@ -7,7 +7,11 @@ sourcetype IN ("config_file","snow:change_request","snow:sys_properties","tanium
     sourcetype="azure:aad:signin", "36.4"
 )
 | stats sum(count) as count by m2131_code
-| sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 | tstats count WHERE (index=okta OR index=azure OR index=cisco OR index=linux_auth OR index=servicenow OR index=os) 
@@ -19,11 +23,21 @@ sourcetype IN ("OktaIM2:log","azure:aad:signin","cisco:ise:syslog","linux_secure
 )
 | stats sum(count) as count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 
 | tstats count WHERE index=cyberark sourcetype="cyberark:epv:cef"
 | eval m2131_code="37.3"
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 
@@ -36,6 +50,11 @@ sourcetype IN ("linux_secure","auditd","ausearch","bash_history","XmlWinEventLog
 )
 | stats sum(count) as count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 index=powershell sourcetype="XmlWinEventLog:Windows PowerShell" EventCode IN (4103,4104)
@@ -46,6 +65,11 @@ index=powershell sourcetype="XmlWinEventLog:Windows PowerShell" EventCode IN (41
 | tstats count WHERE (index=azure OR index=main) sourcetype IN ("o365:management:activity","cofense:syslog") BY sourcetype
 | eval m2131_code="39.1"
 | stats sum(count) as count by m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 | tstats count WHERE (index=tanium OR index=azure OR index=zscaler) 
