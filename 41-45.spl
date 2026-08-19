@@ -1,0 +1,48 @@
+| tstats count WHERE (index=cisco OR index=zscaler) 
+sourcetype IN ("cisco:dnac:devicehealth","cisco:dnac:issue","zscalerlss-zpa-connector") BY sourcetype
+| eval m2131_code=case(
+    sourcetype IN ("cisco:dnac:devicehealth","cisco:dnac:issue"), "42.2",
+    sourcetype="zscalerlss-zpa-connector", "42.3"
+)
+| stats sum(count) as count by m2131_code
+| sort m2131_code
+
+
+| tstats count WHERE (index=venafi OR index=ldap_summary) 
+sourcetype IN ("venafi","ldap_snapshot") BY sourcetype
+| eval m2131_code=case(
+    sourcetype="venafi", "43.1",
+    sourcetype="ldap_snapshot", "43.9"
+)
+| stats sum(count) as count by m2131_code
+| sort m2131_code
+
+
+| tstats count WHERE (index=os OR index=nessus OR index=axonius OR index=invicti) 
+sourcetype IN ("openPorts","tenable:io:assets","tenable:io:vuln","axonius:devices","axonius:vulnerabilities","Vulnerability") BY sourcetype
+| eval m2131_code=case(
+    sourcetype="openPorts", "44.1",
+    sourcetype IN ("tenable:io:assets","axonius:devices"), "44.2",
+    sourcetype IN ("tenable:io:vuln","axonius:vulnerabilities","Vulnerability"), "44.3"
+)
+| stats sum(count) as count by m2131_code
+| sort m2131_code
+
+
+| tstats count WHERE index=nessus sourcetype="tenable:io:plugin"
+| eval m2131_code="44.4"
+
+
+| tstats count WHERE (index=ice_database OR index=venafi_database OR index=ice_finance) 
+sourcetype IN ("mssql:user","mssql:audit","mssql:processes","mssql:table","mssql:databases","mssql:instance","mssql:instancestats","mysqlaudit","oracle:audit:text","db_account_info","db_expiry","bmis:authlog") BY sourcetype
+| eval m2131_code=case(
+    sourcetype IN ("mssql:user","db_account_info"), "45.1",
+    sourcetype IN ("mssql:audit","mysqlaudit","oracle:audit:text"), "45.2",
+    sourcetype="mssql:processes", "45.3",
+    sourcetype="mssql:table", "45.5",
+    sourcetype="mssql:instance", "45.12",
+    sourcetype="mssql:instancestats", "45.12",
+    sourcetype="bmis:authlog", "45.8"
+)
+| stats sum(count) as count by m2131_code
+| sort m2131_code
