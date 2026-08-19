@@ -6,6 +6,11 @@ sourcetype IN ("cisco:dnac:devicehealth","cisco:dnac:issue","zscalerlss-zpa-conn
 )
 | stats sum(count) as count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 | tstats count WHERE (index=venafi OR index=ldap_summary) 
@@ -16,6 +21,11 @@ sourcetype IN ("venafi","ldap_snapshot") BY sourcetype
 )
 | stats sum(count) as count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 | tstats count WHERE (index=os OR index=nessus OR index=axonius OR index=invicti) 
@@ -27,10 +37,20 @@ sourcetype IN ("openPorts","tenable:io:assets","tenable:io:vuln","axonius:device
 )
 | stats sum(count) as count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 | tstats count WHERE index=nessus sourcetype="tenable:io:plugin"
 | eval m2131_code="44.4"
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
 
 
 | tstats count WHERE (index=ice_database OR index=venafi_database OR index=ice_finance) 
@@ -46,3 +66,8 @@ sourcetype IN ("mssql:user","mssql:audit","mssql:processes","mssql:table","mssql
 )
 | stats sum(count) as count by m2131_code
 | sort m2131_code
+| inputlookup append=t m2131_comp.csv  
+| stats max(*) as * by m2131_code
+| eval count=if(isnull(events),count,events)
+| fields - events
+| outputlookup m2131_comp.csv
