@@ -22,3 +22,9 @@ index=tanium
 | where count>1
 | inputlookup append=t 21_31_hosts.csv
 | stats sum(count) as count by host
+
+
+index=servicenow  sourcetype="snow:cmdb" dv_sys_class_name IN (Computer, "Linux Server", "Windows Server") 
+| stats latest(*) as * by sys_id 
+| table name asset_tag dv_asset dv_assigned_to dv_location dv_manufacturer dv_model_id dv_serial_number dv_sys_class_name sys_id
+| outputlookup cmdb.csv
