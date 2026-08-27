@@ -12,19 +12,35 @@ index=axonius sourcetype="axonius:devices"
 | append [ | metadata type=hosts index=powershell ]
 | append [ | metadata type=hosts index=sysmon ]
 | stats sum(totalCount) as count by host
+| rename host as hostname
 | outputlookup 21_31_hosts.csv
 
 
 
 index=tanium
 | stats count by Computer_Name
-| rex field=Computer_Name "^(?<host>[^.]+)"
+| rex field=Computer_Name "^(?<hostname>[^.]+)"
 | where count>1
 | inputlookup append=t 21_31_hosts.csv
-| stats sum(count) as count by host
+| stats sum(count) as count by hostname
+| outputlookup tanium.csv
 
 
 index=servicenow  sourcetype="snow:cmdb" dv_sys_class_name IN (Computer, "Linux Server", "Windows Server") 
 | stats latest(*) as * by sys_id 
 | table name asset_tag dv_asset dv_assigned_to dv_location dv_manufacturer dv_model_id dv_serial_number dv_sys_class_name sys_id
 | outputlookup cmdb.csv
+
+
+
+| inputlookup axonius.csv 
+| where isnotnull(fisma_reportable)
+| inputlookup append=t cmdb.csv
+| inputlookup append=t linux.csv
+| inputlookup append=t windows.csv
+| inputlookup append=t tanium.csv
+| inputlookup append=t 21_31_hosts.csv
+| stats latest(*) as * by hostname
+| stats count(eval(isnotnull(active))) as in_axonius count as total
+| eval not_in_axonius=total-in_axonius
+| eval hwsm_rate=round((in_axonius/total)*100,2)
